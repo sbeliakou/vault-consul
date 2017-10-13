@@ -1,6 +1,7 @@
 version: "3.3"
 
 networks:
+  front-tier:
   back-tier:
     driver: bridge
     ipam:
@@ -13,16 +14,34 @@ services:
     image: "consul"
     restart: "always"
     networks:
-      - back-tier
+      back-tier:
+        ipv4_address: 172.28.0.2
     ports:
-      - "0.0.0.0:8500:8500"
+      - "8500:8500"
       - "172.28.0.1:53:8600/udp"
+    environment:
+      CONSUL_LOCAL_CONFIG: >-
+        {
+          "datacenter": "tools",
+          "data_dir": "/consul/data",
+          "server": true,
+          "bootstrap": true,
+          "bind_addr": "172.28.0.2",
+          "client_addr": "0.0.0.0",
+          "enable_script_checks": true,
+          "ui": true,
+          "acl_datacenter":"tools",
+          "acl_default_policy":"allow",
+          "acl_down_policy":"allow",
+          "acl_master_token":"398073a8-5091-4d9c-871a-bbbeb030d1f6"
+        }
 
   consul-registrator:
     image: "gliderlabs/registrator"
     restart: "always"
-    network_mode: "service:consul"
-    command: consul://localhost:8500
+    networks:
+      - back-tier
+    command: consul://172.28.0.1:8500
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock
     depends_on:

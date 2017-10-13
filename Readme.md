@@ -59,7 +59,9 @@ your vault will remain permanently sealed.
 # docker-compose rm
 ```
 
-Links:
+### Links:
+- https://docs.docker.com/compose/compose-file/
+- http://docker-k8s-lab.readthedocs.io/en/latest/docker/docker-compose.html
 - https://docs.docker.com/engine/admin/pruning/#prune-everything
 - https://docs.docker.com/compose/reference/rm/
 

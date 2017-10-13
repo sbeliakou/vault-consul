@@ -3,8 +3,6 @@ version: "3.3"
 networks:
   back-tier:
     driver: bridge
-    # driver_opts:
-    #   com.docker.network.enable_ipv6: "true"
     ipam:
       driver: default
       config:
@@ -38,7 +36,7 @@ services:
     networks:
       - back-tier
     ports:
-      - 8200:8200
+      - "0.0.0.0:8200:8200"
     cap_add:
       - IPC_LOCK
     command: server

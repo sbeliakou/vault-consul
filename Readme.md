@@ -45,8 +45,21 @@ your vault will remain permanently sealed.
 / # vault unseal LWeJfKkXjyHYvuRKaGRhmNGlyKBWu+qyytG9fCevhTiI
 ```
 
-### Troubleshooting:
+### Troubleshooting and Tips
 
 ```
 # dig @172.28.0.1 vault.service.consul
+
+# docker container prune
+# docker image prune -a
+# docker volume prune
+# docker network prune
+# docker system prune --volumes
+
+# docker-compose rm
 ```
+
+Links:
+- https://docs.docker.com/engine/admin/pruning/#prune-everything
+- https://docs.docker.com/compose/reference/rm/
+

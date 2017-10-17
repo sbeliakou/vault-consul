@@ -57,6 +57,12 @@ your vault will remain permanently sealed.
 # docker system prune --volumes
 
 # docker-compose rm
+# docker network prune
+
+# docker inspect --format '{{ .HostConfig.NetworkMode }}' consul
+
+# consul members
+# consul operator raft -list-peers
 ```
 
 ### Links:
@@ -64,4 +70,5 @@ your vault will remain permanently sealed.
 - http://docker-k8s-lab.readthedocs.io/en/latest/docker/docker-compose.html
 - https://docs.docker.com/engine/admin/pruning/#prune-everything
 - https://docs.docker.com/compose/reference/rm/
+- https://docs.docker.com/engine/reference/commandline/network_rm/
 

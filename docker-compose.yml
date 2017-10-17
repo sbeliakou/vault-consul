@@ -1,8 +1,7 @@
 version: "3.3"
 
 networks:
-  front-tier:
-  back-tier:
+  backtier:
     driver: bridge
     ipam:
       config:
@@ -12,37 +11,58 @@ services:
   consul:
     image: "consul"
     container_name: "consul"
+    hostname: "${CONSUL_NODENAME}"
     restart: "always"
-    networks:
-      back-tier:
-        ipv4_address: 172.28.0.2
-    ports:
-      - "8500:8500"
-      - "172.28.0.1:53:8600/udp"
+    volumes:
+      - ./consul/data:/consul/data:rw
+      - ./consul/config:/consul/config:rw
+    network_mode: host
+    privileged: true
+    # networks:
+    #   backtier:
+    #     ipv4_address: 172.28.0.2
+    # ports:
+    #   - "8300:8300/tcp"
+    #   - "8400:8400/tcp"
+    #   - "8301:8301/udp"
+    #   - "8302:8302/tcp"
+    #   - "8500:8500/tcp"
+    #   - "53:8600/udp"
+    command: "agent"
+    cap_add:
+      - NET_BIND_SERVICE
+      - NET_ADMIN
     environment:
+      CONSUL_ALLOW_PRIVILEGED_PORTS:
       CONSUL_LOCAL_CONFIG: >-
         {
+          "ui": true,
+          "server": true,
           "datacenter": "tools",
           "data_dir": "/consul/data",
-          "server": true,
-          "bootstrap": true,
-          "bind_addr": "172.28.0.2",
+          "bind_addr": "0.0.0.0",
+          "advertise_addr": "${HOSTIP}",
           "client_addr": "0.0.0.0",
           "enable_script_checks": true,
-          "ui": true,
           "acl_datacenter":"tools",
           "acl_default_policy":"allow",
           "acl_down_policy":"allow",
-          "acl_master_token":"398073a8-5091-4d9c-871a-bbbeb030d1f6"
+          "acl_master_token":"398073a8-5091-4d9c-871a-bbbeb030d1f6",
+          "rejoin_after_leave": true,
+          "bootstrap_expect": 3,
+          "ports": {
+            "dns": 53
+          }
         }
 
   consul-registrator:
     image: "gliderlabs/registrator"
     container_name: "consul-registrator"
     restart: "always"
-    networks:
-      back-tier:
-        ipv4_address: 172.28.0.3
+    # networks:
+    #   backtier:
+    #     ipv4_address: 172.28.0.3
+    network_mode: host
     command: consul://172.28.0.1:8500
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock
@@ -56,7 +76,7 @@ services:
     volumes:
       - ./vault/file:/vault/file:rw
     networks:
-      back-tier:
+      backtier:
         ipv4_address: 172.28.0.4
     ports:
       - "0.0.0.0:8200:8200"
@@ -88,14 +108,14 @@ services:
     image: "djenriquez/vault-ui"
     container_name: "vault-ui"
     networks:
-      back-tier:
+      backtier:
         ipv4_address: 172.28.0.5
     ports:
       - "0.0.0.0:8000:8000"
     environment:
       VAULT_URL_DEFAULT: "http://vault.service.consul:8200"
-    dns: 172.28.0.1
-    dns_search:
-      - service.consul
+    # dns: 172.28.0.1
+    # dns_search:
+    #   - service.consul
     depends_on:
       - vault

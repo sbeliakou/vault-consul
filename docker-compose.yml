@@ -11,13 +11,13 @@ services:
   consul:
     image: "consul"
     container_name: "consul"
-    hostname: "${CONSUL_NODENAME}"
+    hostname: "${HOSTNAME}"
     restart: "always"
     volumes:
       - ./consul/data:/consul/data:rw
       - ./consul/config:/consul/config:rw
     network_mode: host
-    privileged: true
+    # privileged: true
     # networks:
     #   backtier:
     #     ipv4_address: 172.28.0.2
@@ -29,20 +29,18 @@ services:
     #   - "8500:8500/tcp"
     #   - "53:8600/udp"
     command: "agent"
-    cap_add:
-      - NET_BIND_SERVICE
-      - NET_ADMIN
+    # cap_add:
+    #   - NET_BIND_SERVICE
+    #   - NET_ADMIN
     environment:
-      CONSUL_ALLOW_PRIVILEGED_PORTS:
-      CONSUL_LOCAL_CONFIG: >-
-        {
+      - 'CONSUL_ALLOW_PRIVILEGED_PORTS='
+      - 'CONSUL_LOCAL_CONFIG= {
           "ui": true,
           "server": true,
           "datacenter": "tools",
           "data_dir": "/consul/data",
-          "bind_addr": "0.0.0.0",
-          "advertise_addr": "${HOSTIP}",
-          "client_addr": "0.0.0.0",
+          "bind_addr": "${HOSTIP}",
+          "client_addr": "127.0.0.1 172.28.0.1 ${HOSTIP}",
           "enable_script_checks": true,
           "acl_datacenter":"tools",
           "acl_default_policy":"allow",
@@ -50,10 +48,20 @@ services:
           "acl_master_token":"398073a8-5091-4d9c-871a-bbbeb030d1f6",
           "rejoin_after_leave": true,
           "bootstrap_expect": 3,
+          "retry_join": [
+            "192.168.56.10",
+            "192.168.56.11",
+            "192.168.56.12"
+          ],
           "ports": {
             "dns": 53
-          }
-        }
+          },
+          "recursors": [
+            "10.6.0.16",
+            "8.8.8.8",
+            "8.8.4.4"
+          ]
+        }'
 
   consul-registrator:
     image: "gliderlabs/registrator"
@@ -68,6 +76,8 @@ services:
       - /var/run/docker.sock:/tmp/docker.sock
     depends_on:
       - consul
+    dns:
+      - 172.28.0.1
 
   vault:
     image: "vault"
@@ -103,6 +113,8 @@ services:
         }
     depends_on:
       - consul
+    dns:
+      - 172.28.0.1
 
   vault-ui:
     image: "djenriquez/vault-ui"
@@ -119,3 +131,5 @@ services:
     #   - service.consul
     depends_on:
       - vault
+    dns:
+      - 172.28.0.1

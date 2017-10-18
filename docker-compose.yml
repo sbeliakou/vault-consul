@@ -42,10 +42,6 @@ services:
           "bind_addr": "${HOSTIP}",
           "client_addr": "127.0.0.1 172.28.0.1 ${HOSTIP}",
           "enable_script_checks": true,
-          "acl_datacenter":"tools",
-          "acl_default_policy":"allow",
-          "acl_down_policy":"allow",
-          "acl_master_token":"398073a8-5091-4d9c-871a-bbbeb030d1f6",
           "rejoin_after_leave": true,
           "bootstrap_expect": 3,
           "retry_join": [
@@ -97,9 +93,10 @@ services:
       VAULT_ADDR: "http://127.0.0.1:8200"
       VAULT_LOCAL_CONFIG: >-
         {
-          "backend": {
-            "file": {
-              "path": "/vault/file"
+          "storage": {
+            "consul": {
+              "address": "172.28.0.1:8500",
+              "path": "vault"
             }
           },
           "listener": {
@@ -125,7 +122,7 @@ services:
     ports:
       - "0.0.0.0:8000:8000"
     environment:
-      VAULT_URL_DEFAULT: "http://vault.service.consul:8200"
+      VAULT_URL_DEFAULT: "http://active.vault.service.consul:8200"
     # dns: 172.28.0.1
     # dns_search:
     #   - service.consul
